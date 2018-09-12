@@ -14,5 +14,6 @@ namespace RecycleAPI.Repository
         GetOrderListResult GetFromOrderNumber(APIKey vendorKey, string orderNumber);
         void UpdateOrderStatusItem(APIKey vendorKey, OrderStatusItem item);
         GetOrderListResult GetOpenOrders();
+        GetOrderListResult GetFromItemId(APIKey key, string itemId);
     }
 }

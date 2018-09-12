@@ -15,7 +15,7 @@ namespace RecycleAPI.Controllers
         private readonly IOrderRepository _repository;
         private readonly IVendorService _vendorService;
         public OrdersController(
-            IOrderRepository repository, 
+            IOrderRepository repository,
             IVendorService vendorService)
         {
             _repository = repository;
@@ -23,14 +23,21 @@ namespace RecycleAPI.Controllers
         }
 
 
+        [HttpGet(), Route("GetByItemId")]
+        public GetOrderListResult GetOrderByItemId([FromHeader] string vendorKey, [FromQuery] string itemId)
+        {
+            var key = _vendorService.ValidateAPIKey(vendorKey);
+            return _repository.GetFromItemId(key, itemId);
+        }
+
         [HttpGet]
         public GetOrderListResult Get(
-            [FromHeader] string vendorKey, 
+            [FromHeader] string vendorKey,
             [FromQuery] string orderNumber,
-            [FromQuery] string orderStatus, 
-            [FromQuery] DateTime? fromDate, 
+            [FromQuery] string orderStatus,
+            [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate,
-            [FromQuery] int itemsPerPage = 300, 
+            [FromQuery] int itemsPerPage = 300,
             [FromQuery] int page = 0)
         {
 
@@ -53,7 +60,7 @@ namespace RecycleAPI.Controllers
 
         [HttpPut]
         public InsertOrderResult Put(
-            [FromHeader]string vendorKey, 
+            [FromHeader]string vendorKey,
             [FromBody]Order[] orders)
         {
 

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace RecycleAPI.Migrations
 {
-    public partial class initialCreate : Migration
+    public partial class initialcreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -20,7 +20,8 @@ namespace RecycleAPI.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     VendorName = table.Column<string>(maxLength: 128, nullable: false),
                     Active = table.Column<bool>(nullable: false),
-                    IsAdministrator = table.Column<bool>(nullable: false)
+                    IsAdministrator = table.Column<bool>(nullable: false),
+                    AllowDuplicateOrderNumbers = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {

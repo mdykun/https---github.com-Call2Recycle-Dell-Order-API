@@ -10,8 +10,8 @@ using RecycleAPI.Services;
 namespace RecycleAPI.Migrations
 {
     [DbContext(typeof(APIContext))]
-    [Migration("20180904122500_initialCreate")]
-    partial class initialCreate
+    [Migration("20180912170534_initial-create")]
+    partial class initialcreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -161,6 +161,8 @@ namespace RecycleAPI.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<bool>("Active");
+
+                    b.Property<bool>("AllowDuplicateOrderNumbers");
 
                     b.Property<string>("CreatedBy");
 

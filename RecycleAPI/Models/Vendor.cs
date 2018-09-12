@@ -15,6 +15,7 @@ namespace RecycleAPI.Models
         public virtual IList<Order> Orders { get; set; }
         public virtual IList<APIKey> Keys { get; set; }
         public bool IsAdministrator { get; set; }
+        public bool AllowDuplicateOrderNumbers { get; set; }
 
         public Vendor()
         {

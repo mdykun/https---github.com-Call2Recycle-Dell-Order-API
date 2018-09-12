@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RecycleAPI.Messaging;
 using RecycleAPI.Models;
 using RecycleAPI.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RecycleAPI.Repository
 {
@@ -24,17 +24,33 @@ namespace RecycleAPI.Repository
                 order.Vendor = key.Vendor;
             }
 
-            var existing = _context.Orders.FirstOrDefault(o => o.OrderNumber == order.OrderNumber && o.Vendor == key.Vendor);
-            if (existing != null)
+            // Check for duplicates if override not allowed
+            if (key.Vendor.AllowDuplicateOrderNumbers == false)
             {
-                result.Success = false;
-                result.Message = $"Duplication Error: Order number {order.OrderNumber} already exists in the system";
-                return;
+                var existing =
+                    _context.Orders.FirstOrDefault(o => o.OrderNumber == order.OrderNumber && o.Vendor == key.Vendor);
+                if (existing != null)
+                {
+                    result.Success = false;
+                    result.Message =
+                        $"Duplication Error: Order number {order.OrderNumber} already exists in the system";
+                    return;
+                }
             }
+
+
+            // Adding trhe crud and logging information to the record
+            order.CreatedDate = DateTime.Now;
+            order.ModifiedDate = DateTime.Now;
+            var vendorName = order.Vendor.VendorName;
+            order.CreatedBy = vendorName;
+            order.ModifiedBy = vendorName;
 
             _context.Orders.Add(order);
             _context.SaveChanges();
+
             result.Success = true;
+            result.ItemId = order.ItemId;
 
         }
 
@@ -46,7 +62,7 @@ namespace RecycleAPI.Repository
 
         public GetOrderListResult GetAll()
         {
-            var result = _context.Orders.Include( o => o.Vendor).ToList();
+            var result = _context.Orders.Include(o => o.Vendor).ToList();
             var orderResult = PackageResults(0, 300, result);
             return orderResult;
         }
@@ -54,7 +70,9 @@ namespace RecycleAPI.Repository
         public GetOrderListResult GetAll(APIKey key, int page = 0, int itemsPerPage = 300)
         {
             if (key == null)
+            {
                 return null;
+            }
 
             var count = _context.Orders
                 .Count(o => o.Vendor == key.Vendor);
@@ -70,10 +88,12 @@ namespace RecycleAPI.Repository
         }
 
         public GetOrderListResult GetAll(
-            APIKey key, DateTime? fromDate, DateTime? toDate,string orderStatus, int page = 0, int itemsPerPage = 300)
+            APIKey key, DateTime? fromDate, DateTime? toDate, string orderStatus, int page = 0, int itemsPerPage = 300)
         {
             if (key == null)
+            {
                 return null;
+            }
 
             IQueryable<Order> query = null;
 
@@ -92,7 +112,9 @@ namespace RecycleAPI.Repository
                         o.Vendor == key.Vendor && (o.OrderDate >= fromDate && o.OrderDate <= toDate));
                 }
                 else
+                {
                     query = _context.Orders.Where(o => o.Vendor == key.Vendor && o.OrderDate >= fromDate);
+                }
             }
             else
             {
@@ -109,7 +131,9 @@ namespace RecycleAPI.Repository
                         o.Vendor == key.Vendor && (o.OrderDate >= fromDate && o.OrderDate <= toDate) && o.OrderStatus == orderStatus);
                 }
                 else
+                {
                     query = _context.Orders.Where(o => o.Vendor == key.Vendor && o.OrderDate >= fromDate && o.OrderStatus == orderStatus);
+                }
             }
 
             var count = query.Count();
@@ -139,7 +163,9 @@ namespace RecycleAPI.Repository
         public GetOrderListResult GetFromOrderNumber(APIKey key, string orderNumber)
         {
             if (key == null)
+            {
                 return null;
+            }
 
             var result = _context.Orders.Where(o => o.Vendor == key.Vendor && o.OrderNumber == orderNumber).ToList();
             var orderResult = PackageResults(0, result.Count, result);
@@ -154,16 +180,25 @@ namespace RecycleAPI.Repository
         public void UpdateOrderStatusItem(APIKey key, OrderStatusItem item)
         {
             if (key == null)
+            {
                 return;
+            }
 
             var existing = _context.Orders.FirstOrDefault(i => i.ItemId == item.ItemId);
             if (existing == null)
+            {
                 return;
+            }
 
             existing.OrderStatus = item.OrderStatus;
             existing.OrderTrackingNumber = item.OrderTransactionNumber;
             existing.ReciptTrackingNumber = item.ReturnTransactionNumber;
             existing.OrderStatusDate = DateTime.Now;
+
+            // Adding the crud information to the record
+            existing.ModifiedBy = key.Vendor.VendorName;
+            existing.ModifiedDate = DateTime.Now;
+
             _context.SaveChanges();
         }
 
@@ -184,6 +219,18 @@ namespace RecycleAPI.Repository
             var orderResult = PackageResults(0, 200, result);
             return orderResult;
 
+        }
+
+        public GetOrderListResult GetFromItemId(APIKey key, string itemId)
+        {
+            if (key == null)
+            {
+                return null;
+            }
+
+            var result = _context.Orders.Where(o => o.Vendor == key.Vendor && o.ItemId == itemId).ToList();
+            var orderResult = PackageResults(0, result.Count, result);
+            return orderResult;
         }
     }
 }

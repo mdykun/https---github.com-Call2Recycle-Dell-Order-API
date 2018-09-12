@@ -160,6 +160,8 @@ namespace RecycleAPI.Migrations
 
                     b.Property<bool>("Active");
 
+                    b.Property<bool>("AllowDuplicateOrderNumbers");
+
                     b.Property<string>("CreatedBy");
 
                     b.Property<DateTime>("CreatedDate");
